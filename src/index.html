@@ -1,12 +1,254 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebGL</title>
-</head>
-<body>
-    <canvas id="canvas" width="600" height="600"></canvas>
-    <script src="script.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebGL 2D LavaBending</title>
+    <link rel="stylesheet" href="./index.css" />
+  </head>
+  <body>
+    <div class="header">
+      <h2>WebGL 2D LavaBending</h2>
+      <div class="help">
+        <button id="help" class="help-button">
+          <img width="25" height="25" src="./assets/help.png" alt="help" />
+        </button>
+      </div>
+    </div>
+    <div class="container">
+      <div class="sidebar">
+        <form onsubmit="return false;">
+          <h3>Model</h3>
+          <button id="line" name="selected-model" value="line">
+            <img width="20" 
+            height="20" 
+            src="./assets/line.png" 
+            alt="line" 
+            /></button>
+          <button id="square" name="selected-model" value="square">
+            <img
+              width="20"
+              height="20"
+              src="./assets/square.png"
+              alt="square"
+            /></button
+          ><br />
+          <button id="rectangle" name="selected-model" value="rectangle">
+            <img
+              width="20"
+              height="20"
+              src="./assets/rectangle.png"
+              alt="rectangle"
+            />
+          </button>
+          <button id="polygon" name="selected-model" value="polygon">
+            <img
+              width="20"
+              height="20"
+              src="./assets/dotted-polygon.png"
+              alt="polygon"
+            /></button
+          ><br />
+        </form>
+        <br />
+        <form onsubmit="return false;">
+          <button id="mulai-gambar-polygon" hidden>Draw Polygon</button>
+          <button id="stop-gambar-polygon" hidden>Stop Drawing Polygon</button>
+          <button id="tambah-titik-polygon" hidden>Add Polygon Point</button>
+          <button id="hapus-titik-polygon" hidden>Delete Polygon Point</button>
+        </form>
+        <form onsubmit="return false;">
+          <h3>Feature</h3>
+          <button id="save" name="selected-feature" value="save">
+            <img width="20" height="20" src="./assets/save.png" alt="save" />
+          </button>
+          <input type="file" id="load" name="selected-feature" value="load" />
+          <button type="reset" id="clear" name="selected-feature" value="clear">
+            Clear
+          </button>
+          <button id="edit" name="selected-feature" value="edit">Edit</button>
+          <br />
+          <label for="color">Color</label>
+          <input type="color" id="color" name="color" value="#000000" />
+          <br />
+          <label for="x-translation">Translation X : </label>
+          <br />
+          <input
+            type="range"
+            min="-1"
+            max="1"
+            step="0.1"
+            value="0"
+            id="x-translation"
+          />
+          <br />
+          <label for="y-translation">Translation Y : </label>
+          <br />
+          <input
+            type="range"
+            min="-1"
+            max="1"
+            step="0.1"
+            value="0"
+            id="y-translation"
+          />
+          <br />
+          <label for="rotation">Rotation : </label>
+          <br />
+          <input
+            type="range"
+            min="0"
+            max="360"
+            step="10"
+            value="0"
+            id="rotation"
+          />
+          <br />
+          <label for="dilation">Dilation : </label>
+          <br />
+          <input
+            type="range"
+            min="0.1"
+            max="2"
+            step="0.1"
+            value="1"
+            id="dilation"
+          />
+          <br />
+          <label for="shear">Shear X : </label>
+          <br />
+          <input
+            type="range"
+            min="-1"
+            max="1"
+            step="0.1"
+            value="0"
+            id="shear"
+          />
+          <br />
+          <label for="shearY">Shear Y : </label>
+          <br />
+          <input
+            type="range"
+            min="-1"
+            max="1"
+            step="0.1"
+            value="0"
+            id="shearY"
+          />
+          <br />
+          <label for="Size">Size : </label>
+          <br />
+          <input
+            type="range"
+            min="5"
+            max="360"
+            step="20"
+            value="100"
+            id="size"
+          />
+        </form>
+      </div>
+      <div class="canvas">
+        <!-- modal -->
+        <div id="modal"class="modal">
+          <div class="modal-content" >
+            <span class="close">&times;</span>
+            <h4>Help</h4>
+            <div class="modal-item">
+              <p>
+                <b>Model</b>
+                <p class="titleHelp">
+                  Garis
+                </p>
+                <p>
+                  1. Klik tombol garis untuk memulai menggambar garis<br />
+                  2. Klik pada canvas kemudian drag untuk menggambar<br />
+                </p>
+                <p class="titleHelp">
+                  Persegi
+                </p>
+                <p>
+                  1. Klik tombol persegi untuk memulai menggambar persegi<br />
+                  2. Gerakkan slider size untuk mengatur ukuran persegi<br />
+                  3. Klik pada canvas untuk menggambar persegi<br />
+                </p>
+                <p class="titleHelp">
+                  Persegi Panjang
+                </p>
+                <p>
+                  1. Klik tombol persegi panjang untuk memulai menggambar persegi panjang<br />
+                  2. Klik pada canvas kemudian drag untuk menggambar<br />
+                </p>
+                <p class="titleHelp">
+                  Polygon
+                </p>
+                <p>
+                  1. Klik tombol polygon<br />
+                  2. Klik tombol draw polygon untuk memulai menggambar polygon<br />
+                  3. Klik pada canvas untuk menambah titik polygon<br />
+                  4. Klik tombol stop drawing polygon untuk mengakhiri menggambar polygon<br />
+                  Untuk menambah titik polygon:<br />
+                  1. Pilih polygon yang ingin ditambah titiknya<br />
+                  2. Klik tombol edit<br />
+                  3. Klik canvas untuk menambah titik yang diinginkan<br />
+                  4. Klik tombol add polygon point untuk menggambar<br />
+                  Untuk menghapus titik:<br />
+                  1. Pilih titik polygon yang ingin dihapus<br />
+                  2. Klik tombol edit<br />
+                  3. Klik tombol delete polygon point<br />
+                </p>
+              </p>
+              <p>
+                <b>Fitur</b>
+                <p class="titleHelp">
+                  Edit
+                </p>
+                <p>
+                  1. Pilih objek yang ingin diedit<br />
+                  2. Klik tombol edit<br />
+                  3. Pilih fitur yang ingin diedit<br />
+                    <li><b>Color</b> : Pilih warna yang diinginkan<br /></li>
+                    <li><b>Translasi X</b> : Gerakkan slider untuk menggeser objek ke arah sumbu x<br /></li>
+                    <li><b>Translasi Y</b> : Gerakkan slider untuk menggeser objek ke arah sumbu y<br /></li>
+                    <li><b>Rotasi</b> : Gerakkan slider untuk memutar objek<br /></li>
+                    <li><b>Dilatasi</b> : Gerakkan slider untuk memperbesar objek<br /></li>
+                    <li><b>Shear X</b> : Gerakkan slider untuk menggeser objek ke arah sumbu x<br /></li>
+                    <li><b>Size</b> : Gerakkan slider untuk mengubah ukuran objek<br /></li>
+                </p>
+                <p class="titleHelp">
+                  Save
+                </p>
+                <p>
+                  1. Klik tombol save<br />
+                  2. Pilih lokasi penyimpanan<br />
+                  3. Klik save<br />
+                </p>
+                <p class="titleHelp">
+                  Load
+                </p>
+                <p>
+                  1. Klik tombol load<br />
+                  2. Pilih file yang ingin dimuat<br />
+                  3. Klik open<br />
+                </p>
+              </p>    
+            </div>
+          </div>
+        </div>
+        <div class="content">
+          <canvas id="canvas" width="800px" height="800px"></canvas>
+          <div class="objectList">
+            <h3>Object List</h3>
+            <div id="list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- <script src="util.js"></script>
+    <script src="model.js"></script>
+    <script src="feature.js"></script>
+    <script src="main.js"></script> -->
+  </body>
 </html>
