@@ -279,6 +279,27 @@
       </div>
     </div>
   </body>
+  <script id="vertex-shader-2d" type="notjs">
+    attribute vec4 a_position;
+    uniform vec2 u_resolution;
+    uniform vec4 u_color;
+    
+    void main() {
+    gl_Position = a_position;
+    }
+</script>
+    
+<script id="fragment-shader-2d" type="notjs">
+    precision mediump float;
+    uniform vec2 u_resolution;
+    uniform vec4 u_color;
+    
+    void main() {
+        gl_FragColor = u_color;
+    }
+    
+</script>
+<script src="script.js"></script>
 </html>
 
 
