@@ -4,6 +4,7 @@ let endCoord = null;
 let gl;
 let lineDrawn = false;
 let linesData = [];
+let rectanglesData = [];
 let squaresData = [];
 let drawMode = 'line';
 let program;
@@ -54,6 +55,9 @@ window.onload = function() {
         drawMode = 'line';
     });
     document.getElementById("rectangle").addEventListener("click", () => {
+        drawMode = 'rectangle';
+    });
+    document.getElementById("square").addEventListener("click", () => {
         drawMode = 'square';
     });
 
@@ -97,7 +101,7 @@ function drawLine(startX, startY, endX, endY) {
     lineDrawn = true;
 }
 
-function drawSquare(program, startX, startY, endX, endY) {
+function drawRectangle(program, startX, startY, endX, endY) {
     let minX = Math.min(startX, endX);
     let minY = Math.min(startY, endY);
     let width = Math.abs(endX - startX);
@@ -112,7 +116,7 @@ function drawSquare(program, startX, startY, endX, endY) {
     let bottomRightX = minX + width;
     let bottomRightY = minY + height;
     
-    let squareVertices = [
+    let rectangleVertices = [
         topLeftX, topLeftY,
         topRightX, topRightY,
         bottomRightX, bottomRightY,
@@ -131,13 +135,61 @@ function drawSquare(program, startX, startY, endX, endY) {
     // ikat buffer untuk atribut posisi
     let positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(squareVertices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rectangleVertices), gl.STATIC_DRAW);
 
     // atur pointer atribut untuk buffer posisi
     let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
     gl.enableVertexAttribArray(positionAttributeLocation);
     gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+}
+
+function drawSquare(program, startX, startY, endX, endY) {
+    let minX = Math.min(startX, endX);
+    let minY = Math.min(startY, endY);
+    let sideLength = Math.abs(endX - startX);
+    
+    // Ensure that width and height are the same for a square
+    let width = sideLength;
+    let height = sideLength;
+    
+    let topLeftX = minX;
+    let topLeftY = minY;
+    let topRightX = minX + width;
+    let topRightY = minY;
+    let bottomLeftX = minX;
+    let bottomLeftY = minY + height;
+    let bottomRightX = minX + width;
+    let bottomRightY = minY + height;
+    
+    let squareVertices = [
+        topLeftX, topLeftY,
+        topRightX, topRightY,
+        bottomRightX, bottomRightY,
+        bottomLeftX, bottomLeftY,
+        topLeftX, topLeftY
+    ];
+
+    // Set color for the square
+    let colorData = [
+    0, 1, 0, 1,
+    0, 1, 0, 1,
+    0, 1, 0, 1,
+    0, 1, 0, 1
+    ];
+
+    // Bind buffer for position attribute
+    let positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(squareVertices), gl.STATIC_DRAW);
+
+    // Set attribute pointer for position buffer
+    let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+    gl.enableVertexAttribArray(positionAttributeLocation);
+    gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+
+    // Draw the square
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 }
 
@@ -163,9 +215,13 @@ function onMouseMove(e) {
 
         gl.clear(gl.COLOR_BUFFER_BIT);
         drawLines()
+        drawRectangles()
         drawSquares()
         if (drawMode === 'line') {
             drawLine(startCoord.x, startCoord.y, endCoord.x, endCoord.y);
+        } else if (drawMode === 'rectangle') {
+            gl.useProgram(program);
+            drawRectangle(program, startCoord.x, startCoord.y, endCoord.x, endCoord.y);
         } else if (drawMode === 'square') {
             gl.useProgram(program);
             drawSquare(program, startCoord.x, startCoord.y, endCoord.x, endCoord.y);
@@ -181,6 +237,9 @@ function onMouseUp(e) {
         if (drawMode === 'line') {
             linesData.push(startCoord.x, startCoord.y, endCoord.x, endCoord.y);
             tambahShapeKeDaftar('garis', startCoord.x, startCoord.y, endCoord.x, endCoord.y);
+        } else if (drawMode === 'rectangle') {
+            rectanglesData.push({ startX: startCoord.x, startY: startCoord.y, endX: endCoord.x, endY: endCoord.y });
+            tambahShapeKeDaftar('persegi-panjang', startCoord.x, startCoord.y, endCoord.x, endCoord.y);
         } else if (drawMode === 'square') {
             squaresData.push({ startX: startCoord.x, startY: startCoord.y, endX: endCoord.x, endY: endCoord.y });
             tambahShapeKeDaftar('persegi', startCoord.x, startCoord.y, endCoord.x, endCoord.y);
@@ -196,8 +255,9 @@ function clearCanvas() {
     gl.clear(gl.COLOR_BUFFER_BIT);
     lineDrawn = false;
     linesData = [];
+    rectanglesData = [];
     squaresData = [];
-    const shapeListElem = document.getElementById("shapeList");
+    const shapeListElem = document.getElementById("list");
     shapeListElem.innerHTML = "";
 }
 
@@ -206,6 +266,8 @@ function tambahShapeKeDaftar(type, startX, startY, endX, endY) {
     const shapeItemElem = document.createElement("div");
     if (type === 'garis') {
         shapeItemElem.textContent = `Line (${startX},${startY}) - (${endX},${endY})`;
+    } else if (type === 'persegi-panjang') {
+        shapeItemElem.textContent = `Rectangle (${startX},${startY}) - (${endX},${endY})`;
     } else if (type === 'persegi') {
         shapeItemElem.textContent = `Square (${startX},${startY}) - (${endX},${endY})`;
     }
@@ -224,6 +286,9 @@ function hapusShapeDariDaftar(type, startX, startY, endX, endY) {
         if (type === 'garis' && shapeText.includes(`(${startX},${startY}) - (${endX},${endY})`)) {
             shapeListElem.removeChild(shapeItemElem);
             break;
+        } else if (type === 'persegi-panjang' && shapeText.includes(`(${startX},${startY}) - (${endX},${endY})`)) {
+            shapeListElem.removeChild(shapeItemElem);
+            break;
         } else if (type === 'persegi' && shapeText.includes(`(${startX},${startY}) - (${endX},${endY})`)) {
             shapeListElem.removeChild(shapeItemElem);
             break;
@@ -238,6 +303,20 @@ function hapusShapeDariDaftar(type, startX, startY, endX, endY) {
                 linesData[i + 3] === endY
             ) {
                 linesData.splice(i, 4);
+                redrawCanvas();
+                break;
+            }
+        }
+    } else if (type === 'persegi-panjang') {
+        for (let i = 0; i < rectanglesData.length; i++) {
+            let rectangle = rectanglesData[i];
+            if (
+                rectangle.startX === startX &&
+                rectangle.startY === startY &&
+                rectangle.endX === endX &&
+                rectangle.endY === endY
+            ) {
+                rectanglesData.splice(i, 1);
                 redrawCanvas();
                 break;
             }
@@ -264,6 +343,7 @@ function redrawCanvas() {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     drawLines();
+    drawRectangles();
     drawSquares();
 }
 
@@ -277,8 +357,19 @@ function drawLines() {
     }
 }
 
+function drawRectangles() {
+    // console.log(rectanglesData)
+    for (let i = 0; i < rectanglesData.length; i++) {
+        let rectangle = rectanglesData[i];
+        let startX = rectangle.startX;
+        let startY = rectangle.startY;
+        let endX = rectangle.endX;
+        let endY = rectangle.endY;
+        drawRectangle(program, startX, startY, endX, endY);
+    }
+}
+
 function drawSquares() {
-    // console.log(squaresData)
     for (let i = 0; i < squaresData.length; i++) {
         let square = squaresData[i];
         let startX = square.startX;
