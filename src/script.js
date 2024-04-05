@@ -568,81 +568,60 @@ function editElement(type, data) {
 
     function handleSliderInputScale(){
         let scale = parseFloat(sliderScale.value);
-
-        if(type === 'garis') {
+    
+        let centerX, centerY;
+        if (type === 'garis') {
+            [centerX, centerY] = centroidLine(data);
+        } else if (type === 'persegi-panjang') {
+            [centerX, centerY] = centroidRectangle(data);
+        } else if (type === 'persegi') {
+            [centerX, centerY] = centroidSquare(data);
+        } else if (type === 'polygon') {
+            [centerX, centerY] = centroidPolygon(data);
+        }
+    
+        if (type === 'garis') {
             for (let i = 0; i < linesData.length; i++) {
-                if(
-                    linesData[i][0] === data[0] &&
-                    linesData[i][1] === data[1] &&
-                    linesData[i][2] === data[2] &&
-                    linesData[i][3] === data[3]
-                ){
-                linesData[i][0] *= scale / scaleTemp;
-                linesData[i][1] *= scale / scaleTemp;
-                linesData[i][2] *= scale / scaleTemp;
-                linesData[i][3] *= scale / scaleTemp;}
-            }
-            redrawCanvas();
-        }
-
-        if(type === 'persegi-panjang') {
-            for (let i = 0; i < rectanglesData.length; i++) {
-                if(
-                    rectanglesData[i][0] === data[0] &&
-                    rectanglesData[i][1] === data[1] &&
-                    rectanglesData[i][2] === data[2] &&
-                    rectanglesData[i][3] === data[3] &&
-                    rectanglesData[i][4] === data[4] &&
-                    rectanglesData[i][5] === data[5] &&
-                    rectanglesData[i][6] === data[6] &&
-                    rectanglesData[i][7] === data[7]){
-                rectanglesData[i][0] *= scale / scaleTemp;
-                rectanglesData[i][1] *= scale / scaleTemp;
-                rectanglesData[i][2] *= scale / scaleTemp;
-                rectanglesData[i][3] *= scale / scaleTemp;
-                rectanglesData[i][4] *= scale / scaleTemp;
-                rectanglesData[i][5] *= scale / scaleTemp;
-                rectanglesData[i][6] *= scale / scaleTemp;
-                rectanglesData[i][7] *= scale / scaleTemp;}
-            }
-            redrawCanvas();
-        }
-
-        if(type === 'persegi') {
-            for(let i = 0; i < squaresData.length; i++) {
-                if(
-                    squaresData[i][0] === data[0] &&
-                    squaresData[i][1] === data[1] &&
-                    squaresData[i][2] === data[2] &&
-                    squaresData[i][3] === data[3] &&
-                    squaresData[i][4] === data[4] &&
-                    squaresData[i][5] === data[5] &&
-                    squaresData[i][6] === data[6] &&
-                    squaresData[i][7] === data[7]){
-                squaresData[i][0] *= scale / scaleTemp;
-                squaresData[i][1] *= scale / scaleTemp;
-                squaresData[i][2] *= scale / scaleTemp;
-                squaresData[i][3] *= scale / scaleTemp;
-                squaresData[i][4] *= scale / scaleTemp;
-                squaresData[i][5] *= scale / scaleTemp;
-                squaresData[i][6] *= scale / scaleTemp;
-                squaresData[i][7] *= scale / scaleTemp;}
-            }
-            redrawCanvas();
-        }
-
-        if(type === 'polygon') {
-            for(let i = 0; i < polygonsData.length; i++) {
-                for(let j = 0; j < polygonsData[i].length; j++) {
-                    if(polygonsData[i][j][0] === data[j][0] && polygonsData[i][j][1] === data[j][1]){
-                    polygonsData[i][j][0] *= scale / scaleTemp;
-                    polygonsData[i][j][1] *= scale / scaleTemp;}
+                if (linesData[i][0] === data[0] && linesData[i][1] === data[1]) {
+                    linesData[i][0] = centerX + (linesData[i][0] - centerX) * scale / scaleTemp;
+                    linesData[i][1] = centerY + (linesData[i][1] - centerY) * scale / scaleTemp;
+                    linesData[i][2] = centerX + (linesData[i][2] - centerX) * scale / scaleTemp;
+                    linesData[i][3] = centerY + (linesData[i][3] - centerY) * scale / scaleTemp;
                 }
             }
-            redrawCanvas();
+        } else if (type === 'persegi-panjang') {
+            for (let i = 0; i < rectanglesData.length; i++) {
+                for (let j = 0; j < rectanglesData[i].length; j += 2) {
+                    if (rectanglesData[i][j] === data[j] && rectanglesData[i][j + 1] === data[j + 1]) {
+                        rectanglesData[i][j] = centerX + (rectanglesData[i][j] - centerX) * scale / scaleTemp;
+                        rectanglesData[i][j + 1] = centerY + (rectanglesData[i][j + 1] - centerY) * scale / scaleTemp;
+                    }
+                }
+            }
+        } else if (type === 'persegi') {
+            for (let i = 0; i < squaresData.length; i++) {
+                for (let j = 0; j < squaresData[i].length; j += 2) {
+                    if (squaresData[i][j] === data[j] && squaresData[i][j + 1] === data[j + 1]) {
+                    squaresData[i][j] = centerX + (squaresData[i][j] - centerX) * scale / scaleTemp;
+                    squaresData[i][j + 1] = centerY + (squaresData[i][j + 1] - centerY) * scale / scaleTemp;
+                    }
+                }
+            }
+        } else if (type === 'polygon') {
+            for (let i = 0; i < polygonsData.length; i++) {
+                for (let j = 0; j < polygonsData[i].length; j++) {
+                    if (polygonsData[i][j][0] === data[j][0] && polygonsData[i][j][1] === data[j][1]) {
+                    polygonsData[i][j][0] = centerX + (polygonsData[i][j][0] - centerX) * scale / scaleTemp;
+                    polygonsData[i][j][1] = centerY + (polygonsData[i][j][1] - centerY) * scale / scaleTemp;
+                    }
+                }
+            }
         }
+    
+        redrawCanvas();
         scaleTemp = scale;
     }
+    
     function handlerRotationInput() {
         let rotation = sliderRotation.value * Math.PI / 180;
 
