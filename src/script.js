@@ -541,3 +541,87 @@ function drawPolygon(points) {
 
     gl.drawArrays(gl.TRIANGLE_FAN, 0, vertices.length / 2);
 }
+
+
+const sliderXtranslation = document.getElementById("x-translation");
+
+sliderXtranslation.addEventListener("input", function() {
+    let xTranslation = parseFloat(sliderXtranslation.value); 
+    let xTemp = 0;
+    
+    if(linesData.length > 0) {
+        for (let i = 0; i < linesData.length; i++) {
+            linesData[i][0] += xTranslation - xTemp;
+            linesData[i][2] += xTranslation - xTemp;
+            redrawCanvas();
+        }
+    }
+    if (rectanglesData.length > 0) {
+        for (let i = 0; i < rectanglesData.length; i++) {
+            rectanglesData[i][0] += xTranslation - xTemp;
+            rectanglesData[i][2] += xTranslation - xTemp;
+            rectanglesData[i][4] += xTranslation - xTemp;
+            rectanglesData[i][6] += xTranslation - xTemp;
+            redrawCanvas();
+        }
+    }
+    if (squaresData.length > 0) {
+        for(let i = 0; i < squaresData.length; i++) {
+            squaresData[i][0] += xTranslation - xTemp;
+            squaresData[i][2] += xTranslation - xTemp;
+            squaresData[i][4] += xTranslation - xTemp;
+            squaresData[i][6] += xTranslation - xTemp;
+            redrawCanvas();
+        }
+    }
+    if (polygonsData.length > 0) {
+        for(let i = 0; i < polygonsData.length; i++) {
+            for(let j = 0; j < polygonsData[i].length; j++) {
+                polygonsData[i][j][0] += xTranslation - xTemp;
+                redrawCanvas();
+            }
+        }
+    }
+    xTemp = xTranslation;
+});
+
+const sliderYtranslation = document.getElementById("y-translation");
+sliderYtranslation.addEventListener("input", function() {
+    let yTranslation = parseFloat(sliderYtranslation.value);
+    let yTemp = 0;
+
+    if(linesData.length > 0) {
+        for (let i = 0; i < linesData.length; i++) {
+            linesData[i][1] += yTranslation - yTemp;
+            linesData[i][3] += yTranslation - yTemp;
+            redrawCanvas();
+        }
+    }
+    if (rectanglesData.length > 0) {
+        for (let i = 0; i < rectanglesData.length; i++) {
+            rectanglesData[i][1] += yTranslation - yTemp;
+            rectanglesData[i][3] += yTranslation - yTemp;
+            rectanglesData[i][5] += yTranslation - yTemp;
+            rectanglesData[i][7] += yTranslation - yTemp;
+            redrawCanvas();
+        }
+    }
+    if (squaresData.length > 0) {
+        for(let i = 0; i < squaresData.length; i++) {
+            squaresData[i][1] += yTranslation - yTemp;
+            squaresData[i][3] += yTranslation - yTemp;
+            squaresData[i][5] += yTranslation - yTemp;
+            squaresData[i][7] += yTranslation - yTemp;
+            redrawCanvas();
+        }
+    }
+    if (polygonsData.length > 0) {
+        for(let i = 0; i < polygonsData.length; i++) {
+            for(let j = 0; j < polygonsData[i].length; j++) {
+                polygonsData[i][j][1] += yTranslation - yTemp;
+                redrawCanvas();
+            }
+        }
+    }
+    yTemp = yTranslation;
+});
