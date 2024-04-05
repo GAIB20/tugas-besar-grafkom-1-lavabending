@@ -68,10 +68,10 @@ p {
   flex-direction: row;
 }
 
-.objectList{
+.objectList {
   color: #000000;
   font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-  font-size: 20px;
+  font-size: 16px;
   background-color: #ffffff;
   border-color: #7F6DA4;
   border-style: solid;
@@ -79,7 +79,12 @@ p {
   padding-left: 100px;
   width: 300px;
   padding-top: 10px;
+  margin-top: 50px; 
+  margin-right: 50px;
+  height: 800px;
+  width: 240px;
 }
+
 
 .modal{
   display: none;
