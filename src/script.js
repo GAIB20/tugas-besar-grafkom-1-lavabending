@@ -262,7 +262,7 @@ function startDrawingPolygon() {
 
 function finishDrawingPolygon() {
     polygonDrawing = false;
-    if (!deletingPoint && !addingPoint && currentPolygonPoints.length >= 3) {
+    if (currentPolygonPoints.length >= 3) {
         tambahShapeKeDaftar('polygon', currentPolygonPoints);
         redrawCanvas();
         document.getElementById("startDrawing").style.display = "block";
@@ -387,10 +387,255 @@ function tambahShapeKeDaftar(type, data) {
         polygonsData.push(data);
     }
     shapeItemElem.addEventListener("click", function() {
-        hapusShapeDariDaftar(type, data);
+        // hapusShapeDariDaftar(type, data);
+        drawMode = "edit";
+        editElement(type, data);
     });
 
     shapeListElem.appendChild(shapeItemElem);
+}
+
+function editElement(type, data) {
+    if (drawMode === 'line') {
+        return;
+    }
+    alert("Edit element type " + type);
+    console.log("edit"+type)
+    const sliderXtranslation = document.getElementById("x-translation");
+    const sliderYtranslation = document.getElementById("y-translation");
+    const sliderScale = document.getElementById("size");
+    isEditing = true;
+
+    function handleSliderInputX(){
+        let xTranslation = parseFloat(sliderXtranslation.value); 
+        let xTemp = 0;
+        if (type === 'garis') {
+            for (let i = 0; i < linesData.length; i++) {
+                let line = linesData[i];
+                if (
+                    line[0] === data[0] &&
+                    line[1] === data[1] &&
+                    line[2] === data[2] &&
+                    line[3] === data[3]
+                ) {
+                    linesData[i][0] += xTranslation - xTemp;
+                    linesData[i][2] += xTranslation - xTemp;
+                    redrawCanvas();
+                    console.log(linesData)
+                    console.log(rectanglesData)
+                    break;
+                }
+            }
+        } 
+        if (type === 'persegi-panjang') {
+            for (let i = 0; i < rectanglesData.length; i++) {
+                let rectangle = rectanglesData[i];
+                if (
+                    rectangle[0] === data[0] &&
+                    rectangle[1] === data[1] &&
+                    rectangle[6] === data[6] &&
+                    rectangle[7] === data[7]
+                ) {
+                    rectanglesData[i][0] += xTranslation - xTemp;
+                    rectanglesData[i][2] += xTranslation - xTemp;
+                    rectanglesData[i][4] += xTranslation - xTemp;
+                    rectanglesData[i][6] += xTranslation - xTemp;
+                    redrawCanvas();
+                    break;
+                }
+            }
+        } 
+        if (type === 'persegi') {
+            for (let i = 0; i < squaresData.length; i++) {
+                let square = squaresData[i];
+                if (
+                    square[0] === data[0] &&
+                    square[1] === data[1] &&
+                    square[6] === data[6] &&
+                    square[7] === data[7]
+                ) {
+                    squaresData[i][0] += xTranslation - xTemp;
+                    squaresData[i][2] += xTranslation - xTemp;
+                    squaresData[i][4] += xTranslation - xTemp;
+                    squaresData[i][6] += xTranslation - xTemp;
+                    redrawCanvas();
+                    break;
+                }
+            }
+        } 
+        if (type === 'polygon') {
+            for (let i = 0; i < polygonsData.length; i++) {
+                let polygon = polygonsData[i];
+                if (polygon === data) {
+                    for (let j = 0; j < polygon.length; j++) {
+                        if (polygon[j][0] === data[j][0] && polygon[j][1] === data[j][1]) {
+                        polygonsData[i][j][0] += xTranslation - xTemp;}
+                        
+                    }
+                }
+                break
+            }
+            redrawCanvas();
+        }
+        xTemp = xTranslation;  
+    }
+
+    function handleSliderInputY(){
+        console.log("masuk y")
+        let yTranslation = parseFloat(sliderYtranslation.value);
+        let yTemp = 0;
+
+        if(type === 'garis') {
+            for (let i = 0; i < linesData.length; i++) {
+                if (
+                    linesData[i][1] === data[1] &&
+                    linesData[i][3] === data[3]
+                ) {
+                linesData[i][1] += yTranslation - yTemp;
+                linesData[i][3] += yTranslation - yTemp;
+                redrawCanvas();
+                break;
+                }
+            }
+        }
+
+        if(type === 'persegi-panjang') {
+            for (let i = 0; i < rectanglesData.length; i++) {
+                if(
+                    rectanglesData[i][1] === data[1] &&
+                    rectanglesData[i][3] === data[3] &&
+                    rectanglesData[i][5] === data[5] &&
+                    rectanglesData[i][7] === data[7]
+                ){
+                rectanglesData[i][1] += yTranslation - yTemp;
+                rectanglesData[i][3] += yTranslation - yTemp;
+                rectanglesData[i][5] += yTranslation - yTemp;
+                rectanglesData[i][7] += yTranslation - yTemp;
+                break;}
+            }
+            redrawCanvas();
+        }
+        
+        if(type === 'persegi') {
+            for (let i = 0; i < squaresData.length; i++) {
+                squaresData[i][1] += yTranslation - yTemp;
+                squaresData[i][3] += yTranslation - yTemp;
+                squaresData[i][5] += yTranslation - yTemp;
+                squaresData[i][7] += yTranslation - yTemp;
+                break;
+            }
+            redrawCanvas();
+        }
+
+        if (type === 'polygon') {
+            for(let i = 0; i < polygonsData.length; i++) {
+                for(let j = 0; j < polygonsData[i].length; j++) {
+                    if(polygonsData[i][j][1] === data[j][1]){
+                    polygonsData[i][j][1] += yTranslation - yTemp;}
+                }
+                break;
+            }
+            redrawCanvas();
+        }
+
+        yTemp = yTranslation;
+    }
+    let scaleTemp = 1;
+
+    function handleSliderInputScale(){
+        let scale = parseFloat(sliderScale.value);
+
+        if(type === 'garis') {
+            for (let i = 0; i < linesData.length; i++) {
+                if(
+                    linesData[i][0] === data[0] &&
+                    linesData[i][1] === data[1] &&
+                    linesData[i][2] === data[2] &&
+                    linesData[i][3] === data[3]
+                ){
+                linesData[i][0] *= scale / scaleTemp;
+                linesData[i][1] *= scale / scaleTemp;
+                linesData[i][2] *= scale / scaleTemp;
+                linesData[i][3] *= scale / scaleTemp;}
+            }
+            redrawCanvas();
+        }
+
+        if(type === 'persegi-panjang') {
+            for (let i = 0; i < rectanglesData.length; i++) {
+                if(
+                    rectanglesData[i][0] === data[0] &&
+                    rectanglesData[i][1] === data[1] &&
+                    rectanglesData[i][2] === data[2] &&
+                    rectanglesData[i][3] === data[3] &&
+                    rectanglesData[i][4] === data[4] &&
+                    rectanglesData[i][5] === data[5] &&
+                    rectanglesData[i][6] === data[6] &&
+                    rectanglesData[i][7] === data[7]){
+                rectanglesData[i][0] *= scale / scaleTemp;
+                rectanglesData[i][1] *= scale / scaleTemp;
+                rectanglesData[i][2] *= scale / scaleTemp;
+                rectanglesData[i][3] *= scale / scaleTemp;
+                rectanglesData[i][4] *= scale / scaleTemp;
+                rectanglesData[i][5] *= scale / scaleTemp;
+                rectanglesData[i][6] *= scale / scaleTemp;
+                rectanglesData[i][7] *= scale / scaleTemp;}
+            }
+            redrawCanvas();
+        }
+
+        if(type === 'persegi') {
+            for(let i = 0; i < squaresData.length; i++) {
+                if(
+                    squaresData[i][0] === data[0] &&
+                    squaresData[i][1] === data[1] &&
+                    squaresData[i][2] === data[2] &&
+                    squaresData[i][3] === data[3] &&
+                    squaresData[i][4] === data[4] &&
+                    squaresData[i][5] === data[5] &&
+                    squaresData[i][6] === data[6] &&
+                    squaresData[i][7] === data[7]){
+                squaresData[i][0] *= scale / scaleTemp;
+                squaresData[i][1] *= scale / scaleTemp;
+                squaresData[i][2] *= scale / scaleTemp;
+                squaresData[i][3] *= scale / scaleTemp;
+                squaresData[i][4] *= scale / scaleTemp;
+                squaresData[i][5] *= scale / scaleTemp;
+                squaresData[i][6] *= scale / scaleTemp;
+                squaresData[i][7] *= scale / scaleTemp;}
+            }
+            redrawCanvas();
+        }
+
+        if(type === 'polygon') {
+            for(let i = 0; i < polygonsData.length; i++) {
+                for(let j = 0; j < polygonsData[i].length; j++) {
+                    if(polygonsData[i][j][0] === data[j][0] && polygonsData[i][j][1] === data[j][1]){
+                    polygonsData[i][j][0] *= scale / scaleTemp;
+                    polygonsData[i][j][1] *= scale / scaleTemp;}
+                }
+            }
+            redrawCanvas();
+        }
+        scaleTemp = scale;
+    }
+
+    sliderXtranslation.addEventListener("input", handleSliderInputX);
+    sliderYtranslation.addEventListener("input", handleSliderInputY);
+    sliderScale.addEventListener("input", handleSliderInputScale);
+
+    document.getElementById("edit-done").addEventListener("click", () => {
+        alert("Edit done");
+        drawMode = 'line';
+        isEditing = false;
+        sliderXtranslation.removeEventListener("input", handleSliderInputX);
+        sliderYtranslation.removeEventListener("input", handleSliderInputY);
+        sliderScale.removeEventListener("input", handleSliderInputScale);
+        sliderXtranslation.value = 0;
+        sliderYtranslation.value = 0;
+        sliderScale.value = 0.5;
+    });
+
 }
 
 function hapusShapeDariDaftar(type, data) {
@@ -544,141 +789,6 @@ function drawPolygon(points) {
 
     gl.drawArrays(gl.TRIANGLE_FAN, 0, vertices.length / 2);
 }
-
-
-const sliderXtranslation = document.getElementById("x-translation");
-let xTemp = 0;
-sliderXtranslation.addEventListener("input", function() {
-    let xTranslation = parseFloat(sliderXtranslation.value); 
-    
-    if(linesData.length > 0) {
-        for (let i = 0; i < linesData.length; i++) {
-            linesData[i][0] += xTranslation - xTemp;
-            linesData[i][2] += xTranslation - xTemp;
-            redrawCanvas();
-        }
-    }
-    if (rectanglesData.length > 0) {
-        for (let i = 0; i < rectanglesData.length; i++) {
-            rectanglesData[i][0] += xTranslation - xTemp;
-            rectanglesData[i][2] += xTranslation - xTemp;
-            rectanglesData[i][4] += xTranslation - xTemp;
-            rectanglesData[i][6] += xTranslation - xTemp;
-            redrawCanvas();
-        }
-    }
-    if (squaresData.length > 0) {
-        for(let i = 0; i < squaresData.length; i++) {
-            squaresData[i][0] += xTranslation - xTemp;
-            squaresData[i][2] += xTranslation - xTemp;
-            squaresData[i][4] += xTranslation - xTemp;
-            squaresData[i][6] += xTranslation - xTemp;
-            redrawCanvas();
-        }
-    }
-    if (polygonsData.length > 0) {
-        for(let i = 0; i < polygonsData.length; i++) {
-            for(let j = 0; j < polygonsData[i].length; j++) {
-                polygonsData[i][j][0] += xTranslation - xTemp;
-                redrawCanvas();
-            }
-        }
-    }
-    xTemp = xTranslation;
-});
-
-const sliderYtranslation = document.getElementById("y-translation");
-let yTemp = 0;
-sliderYtranslation.addEventListener("input", function() {
-    let yTranslation = parseFloat(sliderYtranslation.value);
-
-    if(linesData.length > 0) {
-        for (let i = 0; i < linesData.length; i++) {
-            linesData[i][1] += yTranslation;
-            linesData[i][3] += yTranslation;
-            redrawCanvas();
-        }
-    }
-    if (rectanglesData.length > 0) {
-        for (let i = 0; i < rectanglesData.length; i++) {
-            rectanglesData[i][1] += yTranslation - yTemp;
-            rectanglesData[i][3] += yTranslation - yTemp;
-            rectanglesData[i][5] += yTranslation - yTemp;
-            rectanglesData[i][7] += yTranslation - yTemp;
-            redrawCanvas();
-        }
-    }
-    if (squaresData.length > 0) {
-        for(let i = 0; i < squaresData.length; i++) {
-            squaresData[i][1] += yTranslation - yTemp;
-            squaresData[i][3] += yTranslation - yTemp;
-            squaresData[i][5] += yTranslation - yTemp;
-            squaresData[i][7] += yTranslation - yTemp;
-            redrawCanvas();
-        }
-    }
-    if (polygonsData.length > 0) {
-        for(let i = 0; i < polygonsData.length; i++) {
-            for(let j = 0; j < polygonsData[i].length; j++) {
-                polygonsData[i][j][1] += yTranslation - yTemp;
-                redrawCanvas();
-            }
-        }
-    }
-    yTemp = yTranslation;
-});
-
-const sliderScale = document.getElementById("size");
-let scaleTemp = 1;
-sliderScale.addEventListener("input", function() {
-    let scale = parseFloat(sliderScale.value);
-
-    if(linesData.length > 0) {
-        for (let i = 0; i < linesData.length; i++) {
-            linesData[i][0] *= scale / scaleTemp;
-            linesData[i][1] *= scale / scaleTemp;
-            linesData[i][2] *= scale / scaleTemp;
-            linesData[i][3] *= scale / scaleTemp;
-            redrawCanvas();
-        }
-    }
-    if (rectanglesData.length > 0) {
-        for (let i = 0; i < rectanglesData.length; i++) {
-            rectanglesData[i][0] *= scale / scaleTemp;
-            rectanglesData[i][1] *= scale / scaleTemp;
-            rectanglesData[i][2] *= scale / scaleTemp;
-            rectanglesData[i][3] *= scale / scaleTemp;
-            rectanglesData[i][4] *= scale / scaleTemp;
-            rectanglesData[i][5] *= scale / scaleTemp;
-            rectanglesData[i][6] *= scale / scaleTemp;
-            rectanglesData[i][7] *= scale / scaleTemp;
-            redrawCanvas();
-        }
-    }
-    if (squaresData.length > 0) {
-        for(let i = 0; i < squaresData.length; i++) {
-            squaresData[i][0] *= scale / scaleTemp;
-            squaresData[i][1] *= scale / scaleTemp;
-            squaresData[i][2] *= scale / scaleTemp;
-            squaresData[i][3] *= scale / scaleTemp;
-            squaresData[i][4] *= scale / scaleTemp;
-            squaresData[i][5] *= scale / scaleTemp;
-            squaresData[i][6] *= scale / scaleTemp;
-            squaresData[i][7] *= scale / scaleTemp;
-            redrawCanvas();
-        }
-    }
-    if (polygonsData.length > 0) {
-        for(let i = 0; i < polygonsData.length; i++) {
-            for(let j = 0; j < polygonsData[i].length; j++) {
-                polygonsData[i][j][0] *= scale / scaleTemp;
-                polygonsData[i][j][1] *= scale / scaleTemp;
-                redrawCanvas();
-            }
-        }
-    }
-    scaleTemp = scale;
-});
 
 const sliderRotation = document.getElementById("rotation");
 let rotationTemp = 0;
