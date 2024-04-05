@@ -19,6 +19,10 @@ let currentPolygonPoints = [];
 let currentrectangleVertices = [];
 let currentlineVertices = [];
 let currentsquareVertices = [];
+let xTemp = 0;
+let yTemp = 0;
+let scaleTemp = 1;
+let rotationTemp = 0;
 
 window.onload = function() {
     var canvas = document.getElementById('canvas');
@@ -395,6 +399,28 @@ function tambahShapeKeDaftar(type, data) {
     shapeListElem.appendChild(shapeItemElem);
 }
 
+function centroidLine(line) {
+    return [(line[0] + line[2]) / 2, (line[1] + line[3]) / 2];
+}
+
+function centroidRectangle(rectangle) {
+    return [(rectangle[0] + rectangle[4]) / 2, (rectangle[1] + rectangle[5]) / 2];
+}
+
+function centroidSquare(square) {
+    return [(square[0] + square[4]) / 2, (square[1] + square[5]) / 2];
+}
+
+function centroidPolygon(polygon) {
+    let x = 0;
+    let y = 0;
+    for (let i = 0; i < polygon.length; i++) {
+        x += polygon[i][0];
+        y += polygon[i][1];
+    }
+    return [x / polygon.length, y / polygon.length];
+}
+
 function editElement(type, data) {
     if (drawMode === 'line') {
         return;
@@ -404,11 +430,11 @@ function editElement(type, data) {
     const sliderXtranslation = document.getElementById("x-translation");
     const sliderYtranslation = document.getElementById("y-translation");
     const sliderScale = document.getElementById("size");
+    const sliderRotation = document.getElementById("rotation");
     isEditing = true;
 
     function handleSliderInputX(){
         let xTranslation = parseFloat(sliderXtranslation.value); 
-        let xTemp = 0;
         if (type === 'garis') {
             for (let i = 0; i < linesData.length; i++) {
                 let line = linesData[i];
@@ -483,7 +509,6 @@ function editElement(type, data) {
     function handleSliderInputY(){
         console.log("masuk y")
         let yTranslation = parseFloat(sliderYtranslation.value);
-        let yTemp = 0;
 
         if(type === 'garis') {
             for (let i = 0; i < linesData.length; i++) {
@@ -540,7 +565,6 @@ function editElement(type, data) {
 
         yTemp = yTranslation;
     }
-    let scaleTemp = 1;
 
     function handleSliderInputScale(){
         let scale = parseFloat(sliderScale.value);
@@ -619,10 +643,72 @@ function editElement(type, data) {
         }
         scaleTemp = scale;
     }
+    function handlerRotationInput() {
+        let rotation = sliderRotation.value * Math.PI / 180;
+
+        if(type === 'garis') {
+            for(let i = 0; i < linesData.length; i++) {
+                let center = centroidLine(linesData[i]);
+                for(let j = 0; j < linesData[i].length; j += 2) {
+                    if (linesData[i][j] === data[j] && linesData[i][j + 1] === data[j + 1]) {
+                        let x = linesData[i][j] - center[0];
+                        let y = linesData[i][j + 1] - center[1];
+                        linesData[i][j] = x * Math.cos(rotation - rotationTemp) - y * Math.sin(rotation - rotationTemp) + center[0];
+                        linesData[i][j + 1] = x * Math.sin(rotation - rotationTemp) + y * Math.cos(rotation - rotationTemp) + center[1];
+                        redrawCanvas();
+                    }
+                }
+            }
+        }
+        if(type === 'persegi-panjang') {
+            for(let i = 0; i < rectanglesData.length; i++) {
+                let center = centroidRectangle(rectanglesData[i]);
+                for(let j = 0; j < rectanglesData[i].length; j += 2) {
+                    if (rectanglesData[i][j] === data[j] && rectanglesData[i][j + 1] === data[j + 1]) {
+                        let x = rectanglesData[i][j] - center[0];
+                        let y = rectanglesData[i][j + 1] - center[1];
+                        rectanglesData[i][j] = x * Math.cos(rotation - rotationTemp) - y * Math.sin(rotation - rotationTemp) + center[0];
+                        rectanglesData[i][j + 1] = x * Math.sin(rotation - rotationTemp) + y * Math.cos(rotation - rotationTemp) + center[1];
+                        redrawCanvas();
+                    }
+                }
+            }
+        }
+        if(type === 'persegi') {
+            for(let i = 0; i < squaresData.length; i++) {
+                let center = centroidSquare(squaresData[i]);
+                for(let j = 0; j < squaresData[i].length; j += 2) {
+                    if (squaresData[i][j] === data[j] && squaresData[i][j + 1] === data[j + 1]) {
+                        let x = squaresData[i][j] - center[0];
+                        let y = squaresData[i][j + 1] - center[1];
+                        squaresData[i][j] = x * Math.cos(rotation - rotationTemp) - y * Math.sin(rotation - rotationTemp) + center[0];
+                        squaresData[i][j + 1] = x * Math.sin(rotation - rotationTemp) + y * Math.cos(rotation - rotationTemp) + center[1];
+                        redrawCanvas();
+                    }
+                }
+            }
+        }
+        if(type === 'polygon') {
+            for(let i = 0; i < polygonsData.length; i++) {
+                let center = centroidPolygon(polygonsData[i]);
+                for(let j = 0; j < polygonsData[i].length; j++) {
+                    if (polygonsData[i][j][0] === data[j][0] && polygonsData[i][j][1] === data[j][1]) {
+                        let x = polygonsData[i][j][0] - center[0];
+                        let y = polygonsData[i][j][1] - center[1];
+                        polygonsData[i][j][0] = x * Math.cos(rotation - rotationTemp) - y * Math.sin(rotation - rotationTemp) + center[0];
+                        polygonsData[i][j][1] = x * Math.sin(rotation - rotationTemp) + y * Math.cos(rotation - rotationTemp) + center[1];
+                        redrawCanvas();
+                    }
+                }
+            }
+        }
+        rotationTemp = rotation;
+    }
 
     sliderXtranslation.addEventListener("input", handleSliderInputX);
     sliderYtranslation.addEventListener("input", handleSliderInputY);
     sliderScale.addEventListener("input", handleSliderInputScale);
+    sliderRotation.addEventListener("input", handlerRotationInput);
 
     document.getElementById("edit-done").addEventListener("click", () => {
         alert("Edit done");
@@ -631,9 +717,11 @@ function editElement(type, data) {
         sliderXtranslation.removeEventListener("input", handleSliderInputX);
         sliderYtranslation.removeEventListener("input", handleSliderInputY);
         sliderScale.removeEventListener("input", handleSliderInputScale);
+        sliderRotation.removeEventListener("input", handlerRotationInput);
         sliderXtranslation.value = 0;
         sliderYtranslation.value = 0;
         sliderScale.value = 0.5;
+        sliderRotation.value = 0;
     });
 
 }
@@ -789,11 +877,3 @@ function drawPolygon(points) {
 
     gl.drawArrays(gl.TRIANGLE_FAN, 0, vertices.length / 2);
 }
-
-const sliderRotation = document.getElementById("rotation");
-let rotationTemp = 0;
-sliderRotation.addEventListener("input", function() {
-    let rotation = sliderRotation.value * Math.PI / 180;
-
-    
-});
