@@ -359,20 +359,23 @@ function clearCanvas() {
 function tambahShapeKeDaftar(type, data) {
     const shapeListElem = document.getElementById("list");
     const shapeItemElem = document.createElement("div");
+    let count;
     if (type === 'garis') {
         // shapeItemElem.textContent = `Line (${startX},${startY}) - (${endX},${endY})`;
         let points = '';
         for (let i = 0; i < data.length; i += 2) {
             points += `(${data[i]},${data[i + 1]}) `;
         }
-        shapeItemElem.textContent = `Line ${points}`;
+        count = linesData.length+1;
+        shapeItemElem.textContent = `Line ${linesData.length+1}`;
         linesData.push(data);
     } else if (type === 'persegi-panjang') {
         let points = '';
         for (let i = 0; i < data.length; i += 2) {
             points += `(${data[i]},${data[i + 1]}) `;
         }
-        shapeItemElem.textContent = `Rectangle ${points}`;
+        count = rectanglesData.length+1;
+        shapeItemElem.textContent = `Rectangle ${rectanglesData.length+1}`;
         rectanglesData.push(data);
     } else if (type === 'persegi') {
         // shapeItemElem.textContent = `Square (${startX},${startY}) - (${endX},${endY})`;
@@ -380,20 +383,22 @@ function tambahShapeKeDaftar(type, data) {
         for (let i = 0; i < data.length; i += 2) {
             points += `(${data[i]},${data[i + 1]}) `;
         }
-        shapeItemElem.textContent = `Square ${points}`;
+        count = squaresData.length+1;
+        shapeItemElem.textContent = `Square ${squaresData.length+1}`;
         squaresData.push(data);
     } else if (type === 'polygon') {
         let points = '';
         for (let i = 0; i < data.length; i++) {
             points += `(${data[i][0]},${data[i][1]}) `;
         }
-        shapeItemElem.textContent = `Polygon ${points}`;
+        count = polygonsData.length+1;
+        shapeItemElem.textContent = `Polygon ${polygonsData.length+1}`;
         polygonsData.push(data);
     }
     shapeItemElem.addEventListener("click", function() {
         // hapusShapeDariDaftar(type, data);
         drawMode = "edit";
-        editElement(type, data);
+        editElement(type, data, count);
     });
 
     shapeListElem.appendChild(shapeItemElem);
@@ -421,7 +426,7 @@ function centroidPolygon(polygon) {
     return [x / polygon.length, y / polygon.length];
 }
 
-function editElement(type, data) {
+function editElement(type, data, count) {
     if (drawMode === 'line') {
         return;
     }
@@ -689,6 +694,21 @@ function editElement(type, data) {
     sliderScale.addEventListener("input", handleSliderInputScale);
     sliderRotation.addEventListener("input", handlerRotationInput);
 
+    document.getElementById("delete").addEventListener("click", () => {
+        hapusShapeDariDaftar(type, data, count);
+        drawMode = 'line';
+        isEditing = false;
+        sliderXtranslation.removeEventListener("input", handleSliderInputX);
+        sliderYtranslation.removeEventListener("input", handleSliderInputY);
+        sliderScale.removeEventListener("input", handleSliderInputScale);
+        sliderRotation.removeEventListener("input", handlerRotationInput);
+        sliderXtranslation.value = 0;
+        sliderYtranslation.value = 0;
+        sliderScale.value = 0.5;
+        sliderRotation.value = 0;
+    });
+
+
     document.getElementById("edit-done").addEventListener("click", () => {
         alert("Edit done");
         drawMode = 'line';
@@ -705,34 +725,34 @@ function editElement(type, data) {
 
 }
 
-function hapusShapeDariDaftar(type, data) {
+function hapusShapeDariDaftar(type, data, count) {
     const shapeListElem = document.getElementById("list");
     for (let i = 0; i < shapeListElem.children.length; i++) {
         const shapeItemElem = shapeListElem.children[i];
         const shapeText = shapeItemElem.textContent;
-        let points = '';
-        if (type === 'garis' || type === 'persegi-panjang' || type === 'persegi') {
-            for (let i = 0; i < data.length; i += 2) {
-                points += `(${data[i]},${data[i + 1]}) `;
-            }
-        } else if (type === 'polygon') {
-            for (let i = 0; i < data.length; i++) {
-                points += `(${data[i][0]},${data[i][1]}) `;
-            }
-        }
-        console.log(points)
-        if (type === 'polygon' && shapeText.includes(`${points}`)) {
+        // let points = '';
+        // if (type === 'garis' || type === 'persegi-panjang' || type === 'persegi') {
+        //     for (let i = 0; i < data.length; i += 2) {
+        //         points += `(${data[i]},${data[i + 1]}) `;
+        //     }
+        // } else if (type === 'polygon') {
+        //     for (let i = 0; i < data.length; i++) {
+        //         points += `(${data[i][0]},${data[i][1]}) `;
+        //     }
+        // }
+        
+        if (type === 'polygon' && shapeText.includes(`Polygon ${count}`)) {
             shapeListElem.removeChild(shapeItemElem);
             break;
         } else
 
-        if (type === 'garis' && shapeText.includes(`${points}`)) {
+        if (type === 'garis' && shapeText.includes(`Line ${count}`)) {
             shapeListElem.removeChild(shapeItemElem);
             break;
-        } else if (type === 'persegi-panjang' && shapeText.includes(`${points}`)) {
+        } else if (type === 'persegi-panjang' && shapeText.includes(`Rectangle ${count}`)) {
             shapeListElem.removeChild(shapeItemElem);
             break;
-        } else if (type === 'persegi' && shapeText.includes(`${points}`)) {
+        } else if (type === 'persegi' && shapeText.includes(`Square ${count}`)) {
             shapeListElem.removeChild(shapeItemElem);
             break;
         }
