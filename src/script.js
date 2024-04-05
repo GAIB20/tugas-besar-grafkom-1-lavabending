@@ -6,6 +6,7 @@ let lineDrawn = false;
 let linesData = [];
 let rectanglesData = [];
 let squaresData = [];
+let polygonsData = [];
 let drawMode = 'line';
 let program;
 let positionAttributeLocation;
@@ -13,6 +14,8 @@ let colorUniformLocation;
 let positionBuffer;
 let colorBuffer;
 let colorAttributeLocation;
+let polygonDrawing = false;
+let currentPolygonPoints = [];
 
 window.onload = function() {
     var canvas = document.getElementById('canvas');
@@ -53,13 +56,23 @@ window.onload = function() {
     document.getElementById("clear").addEventListener("click", clearCanvas);
     document.getElementById("line").addEventListener("click", () => {
         drawMode = 'line';
+        document.getElementById("startDrawing").style.display = "none";
     });
     document.getElementById("rectangle").addEventListener("click", () => {
         drawMode = 'rectangle';
+        document.getElementById("startDrawing").style.display = "none";
     });
     document.getElementById("square").addEventListener("click", () => {
         drawMode = 'square';
+        document.getElementById("startDrawing").style.display = "none";
     });
+    document.getElementById("polygon").addEventListener("click", () => {
+        drawMode = 'polygon';
+        document.getElementById("startDrawing").style.display = "block";
+    });
+
+    document.getElementById("startDrawing").addEventListener("click", startDrawingPolygon);
+    document.getElementById("finishDrawing").addEventListener("click", finishDrawingPolygon);
 
     // console.log(linesData)
 };
@@ -193,8 +206,35 @@ function drawSquare(program, startX, startY, endX, endY) {
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 }
 
+function startDrawingPolygon() {
+    polygonDrawing = true;
+    currentPolygonPoints = [];
+    document.getElementById("startDrawing").style.display = "none";
+    document.getElementById("finishDrawing").style.display = "block";
+}
+
+function finishDrawingPolygon() {
+    polygonDrawing = false;
+    if (currentPolygonPoints.length >= 3) {
+        polygonsData.push(currentPolygonPoints);
+        redrawCanvas();
+        document.getElementById("startDrawing").style.display = "block";
+        document.getElementById("finishDrawing").style.display = "none";
+        currentPolygonPoints = [];
+    } else {
+        alert("Minimal 3 titik diperlukan untuk membuat poligon.");
+    }
+
+}
+
 function onMouseDown(e) {
-    if (!lineDrawn) {
+    if (polygonDrawing) {
+        currentPolygonPoints.push([
+            e.offsetX / canvas.width * 2 - 1,
+            (canvas.height - e.offsetY) / canvas.height * 2 - 1
+        ]);
+        redrawCanvas();
+    } else if (!lineDrawn) {
         isDrawing = true;
         startCoord = {
             x: e.offsetX / canvas.width * 2 - 1,
@@ -217,6 +257,7 @@ function onMouseMove(e) {
         drawLines()
         drawRectangles()
         drawSquares()
+        drawPolygons()
         if (drawMode === 'line') {
             drawLine(startCoord.x, startCoord.y, endCoord.x, endCoord.y);
         } else if (drawMode === 'rectangle') {
@@ -345,6 +386,12 @@ function redrawCanvas() {
     drawLines();
     drawRectangles();
     drawSquares();
+    drawPolygons();
+
+    // gambar polygon sementara
+    if (polygonDrawing && currentPolygonPoints.length > 0) {
+        drawPolygon(currentPolygonPoints);
+    }
 }
 
 function drawLines() {
@@ -378,4 +425,25 @@ function drawSquares() {
         let endY = square.endY;
         drawSquare(program, startX, startY, endX, endY);
     }
+}
+
+function drawPolygons() {
+    console.log(polygonsData)
+    for (let i = 0; i < polygonsData.length; i++) {
+        drawPolygon(polygonsData[i]);
+    }
+}
+
+function drawPolygon(points) {
+    // const vertices = points.flat();
+    // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    // gl.drawArrays(gl.LINE_LOOP, 0, vertices.length / 2);
+    const vertices = points.flat();
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+    // set color
+    // const colorUniformLocation = gl.getUniformLocation(program, "u_color");
+    // gl.uniform4fv(colorUniformLocation, [Math.random(), Math.random(), Math.random(), 1]);
+
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, vertices.length / 2);
 }
