@@ -877,3 +877,44 @@ function drawPolygon(points) {
 
     gl.drawArrays(gl.TRIANGLE_FAN, 0, vertices.length / 2);
 }
+
+function saveModel() {
+    let modelData = {
+        lines: linesData,
+        rectangles: rectanglesData,
+        squares: squaresData,
+        polygons: polygonsData
+    };
+
+    let jsonData = JSON.stringify(modelData);
+    let blob = new Blob([jsonData], {type: 'application/json'});
+    let url = URL.createObjectURL(blob);
+
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = 'model.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+
+function loadModel(event) {
+    let input = event.target;
+    let file = input.files[0];
+
+    let reader = new FileReader();
+    reader.onload = function() {
+        let jsonData = reader.result;
+        let modelData = JSON.parse(jsonData);
+
+        linesData = modelData.lines || [];
+        rectanglesData = modelData.rectangles || [];
+        squaresData = modelData.squares || [];
+        polygonsData = modelData.polygons || [];
+
+        redrawCanvas();
+    };
+    reader.readAsText(file);
+}
