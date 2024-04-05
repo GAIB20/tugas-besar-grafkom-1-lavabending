@@ -436,7 +436,18 @@ function editElement(type, data, count) {
     const sliderYtranslation = document.getElementById("y-translation");
     const sliderScale = document.getElementById("size");
     const sliderRotation = document.getElementById("rotation");
+    const sliderColor = document.getElementById("color");
     isEditing = true;
+
+    function handleSliderColor() {
+        let color = sliderColor.value;
+        let red = parseInt(color.slice(1, 3), 16) / 255;
+        let green = parseInt(color.slice(3, 5), 16) / 255;
+        let blue = parseInt(color.slice(5, 7), 16) / 255;
+        let alpha = 1.0;
+        gl.uniform4fv(colorUniformLocation, [red, green, blue, alpha]);
+        redrawCanvas();
+    }
 
     function handleSliderInputX(){
         let xTranslation = parseFloat(sliderXtranslation.value); 
@@ -693,6 +704,7 @@ function editElement(type, data, count) {
     sliderYtranslation.addEventListener("input", handleSliderInputY);
     sliderScale.addEventListener("input", handleSliderInputScale);
     sliderRotation.addEventListener("input", handlerRotationInput);
+    sliderColor.addEventListener("input", handleSliderColor);
 
     document.getElementById("delete").addEventListener("click", () => {
         hapusShapeDariDaftar(type, data, count);
@@ -702,10 +714,12 @@ function editElement(type, data, count) {
         sliderYtranslation.removeEventListener("input", handleSliderInputY);
         sliderScale.removeEventListener("input", handleSliderInputScale);
         sliderRotation.removeEventListener("input", handlerRotationInput);
+        sliderColor.removeEventListener("input", handleSliderColor);
         sliderXtranslation.value = 0;
         sliderYtranslation.value = 0;
         sliderScale.value = 0.5;
         sliderRotation.value = 0;
+        sliderColor.value = "#000000";
     });
 
 
