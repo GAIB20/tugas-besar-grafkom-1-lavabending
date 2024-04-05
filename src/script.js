@@ -29,7 +29,7 @@ window.onload = function() {
         return;
     }
 
-    gl.clearColor(0.5, 0.5, 0.5, 1.0);
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     let vertexShaderSource = document.querySelector("#vertex-shader-2d").text;
@@ -50,7 +50,7 @@ window.onload = function() {
     gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
     gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
-    // gl.uniform4fv(colorUniformLocation, [0, 0, 1, 1]);
+    gl.uniform4fv(colorUniformLocation, [0, 0, 1, 1]);
     
     canvas.addEventListener("mousedown", onMouseDown);
     canvas.addEventListener("mousemove", onMouseMove);
