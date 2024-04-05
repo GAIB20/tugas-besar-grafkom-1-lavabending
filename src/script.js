@@ -16,6 +16,9 @@ let colorBuffer;
 let colorAttributeLocation;
 let polygonDrawing = false;
 let currentPolygonPoints = [];
+let currentrectangleVertices = [];
+let currentlineVertices = [];
+let currentsquareVertices = [];
 
 window.onload = function() {
     var canvas = document.getElementById('canvas');
@@ -109,9 +112,27 @@ function createProgram(gl, vertexShader, fragmentShader) {
 }
 
 function drawLine(startX, startY, endX, endY) {
+    currentlineVertices = [startX, startY, endX, endY];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([startX, startY, endX, endY]), gl.STATIC_DRAW);
     gl.drawArrays(gl.LINE_STRIP, 0, 2);
     lineDrawn = true;
+}
+
+function redrawLine(program, lineVertices) {
+    // console.log("buat line lagi")
+    // Bind buffer for position attribute
+    let positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lineVertices), gl.STATIC_DRAW);
+
+    // Set attribute pointer for position buffer
+    let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+    gl.enableVertexAttribArray(positionAttributeLocation);
+    gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+
+    // Draw the line
+    gl.drawArrays(gl.LINE_STRIP, 0, 2);
+
 }
 
 function drawRectangle(program, startX, startY, endX, endY) {
@@ -129,22 +150,35 @@ function drawRectangle(program, startX, startY, endX, endY) {
     let bottomRightX = minX + width;
     let bottomRightY = minY + height;
     
-    let rectangleVertices = [
+    currentrectangleVertices = [
         topLeftX, topLeftY,
         topRightX, topRightY,
         bottomRightX, bottomRightY,
         bottomLeftX, bottomLeftY,
-        topLeftX, topLeftY
     ];
 
     // TODO: Set Color untuk persegi
     let colorData = [
-    0, 1, 0, 1,
-    0, 1, 0, 1,
-    0, 1, 0, 1,
-    0, 1, 0, 1
-    ];
+        0, 1, 0, 1,
+        0, 1, 0, 1,
+        0, 1, 0, 1,
+        0, 1, 0, 1
+        ];
 
+    // ikat buffer untuk atribut posisi
+    let positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(currentrectangleVertices), gl.STATIC_DRAW);
+
+    // atur pointer atribut untuk buffer posisi
+    let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+    gl.enableVertexAttribArray(positionAttributeLocation);
+    gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+}
+
+function redrawRectangle(program, rectangleVertices) {
     // ikat buffer untuk atribut posisi
     let positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -156,6 +190,7 @@ function drawRectangle(program, startX, startY, endX, endY) {
     gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
 }
 
 function drawSquare(program, startX, startY, endX, endY) {
@@ -176,12 +211,11 @@ function drawSquare(program, startX, startY, endX, endY) {
     let bottomRightX = minX + width;
     let bottomRightY = minY + height;
     
-    let squareVertices = [
+    currentsquareVertices = [
         topLeftX, topLeftY,
         topRightX, topRightY,
         bottomRightX, bottomRightY,
         bottomLeftX, bottomLeftY,
-        topLeftX, topLeftY
     ];
 
     // Set color for the square
@@ -192,17 +226,30 @@ function drawSquare(program, startX, startY, endX, endY) {
     0, 1, 0, 1
     ];
 
-    // Bind buffer for position attribute
+    // ikat buffer untuk atribut posisi
     let positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(squareVertices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(currentsquareVertices), gl.STATIC_DRAW);
 
-    // Set attribute pointer for position buffer
+    // atur pointer atribut untuk buffer posisi
     let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
     gl.enableVertexAttribArray(positionAttributeLocation);
     gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
-    // Draw the square
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+}
+
+function redrawSquare(program, squareVertices) {
+    // ikat buffer untuk atribut posisi
+    let positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(squareVertices), gl.STATIC_DRAW);
+
+    // atur pointer atribut untuk buffer posisi
+    let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+    gl.enableVertexAttribArray(positionAttributeLocation);
+    gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 }
 
@@ -216,7 +263,7 @@ function startDrawingPolygon() {
 function finishDrawingPolygon() {
     polygonDrawing = false;
     if (currentPolygonPoints.length >= 3) {
-        polygonsData.push(currentPolygonPoints);
+        tambahShapeKeDaftar('polygon', currentPolygonPoints);
         redrawCanvas();
         document.getElementById("startDrawing").style.display = "block";
         document.getElementById("finishDrawing").style.display = "none";
@@ -276,14 +323,13 @@ function onMouseUp(e) {
         isDrawing = false;
         lineDrawn = false;
         if (drawMode === 'line') {
-            linesData.push(startCoord.x, startCoord.y, endCoord.x, endCoord.y);
-            tambahShapeKeDaftar('garis', startCoord.x, startCoord.y, endCoord.x, endCoord.y);
+            tambahShapeKeDaftar('garis', currentlineVertices);
+            currentlineVertices = [];
         } else if (drawMode === 'rectangle') {
-            rectanglesData.push({ startX: startCoord.x, startY: startCoord.y, endX: endCoord.x, endY: endCoord.y });
-            tambahShapeKeDaftar('persegi-panjang', startCoord.x, startCoord.y, endCoord.x, endCoord.y);
+            tambahShapeKeDaftar('persegi-panjang', currentrectangleVertices);
+            currentrectangleVertices = [];
         } else if (drawMode === 'square') {
-            squaresData.push({ startX: startCoord.x, startY: startCoord.y, endX: endCoord.x, endY: endCoord.y });
-            tambahShapeKeDaftar('persegi', startCoord.x, startCoord.y, endCoord.x, endCoord.y);
+            tambahShapeKeDaftar('persegi', currentsquareVertices);
         }
     }
 }
@@ -302,48 +348,89 @@ function clearCanvas() {
     shapeListElem.innerHTML = "";
 }
 
-function tambahShapeKeDaftar(type, startX, startY, endX, endY) {
+function tambahShapeKeDaftar(type, data) {
     const shapeListElem = document.getElementById("list");
     const shapeItemElem = document.createElement("div");
     if (type === 'garis') {
-        shapeItemElem.textContent = `Line (${startX},${startY}) - (${endX},${endY})`;
+        // shapeItemElem.textContent = `Line (${startX},${startY}) - (${endX},${endY})`;
+        let points = '';
+        for (let i = 0; i < data.length; i += 2) {
+            points += `(${data[i]},${data[i + 1]}) `;
+        }
+        shapeItemElem.textContent = `Line ${points}`;
+        linesData.push(data);
     } else if (type === 'persegi-panjang') {
-        shapeItemElem.textContent = `Rectangle (${startX},${startY}) - (${endX},${endY})`;
+        let points = '';
+        for (let i = 0; i < data.length; i += 2) {
+            points += `(${data[i]},${data[i + 1]}) `;
+        }
+        shapeItemElem.textContent = `Rectangle ${points}`;
+        rectanglesData.push(data);
     } else if (type === 'persegi') {
-        shapeItemElem.textContent = `Square (${startX},${startY}) - (${endX},${endY})`;
+        // shapeItemElem.textContent = `Square (${startX},${startY}) - (${endX},${endY})`;
+        let points = '';
+        for (let i = 0; i < data.length; i += 2) {
+            points += `(${data[i]},${data[i + 1]}) `;
+        }
+        shapeItemElem.textContent = `Square ${points}`;
+        squaresData.push(data);
+    } else if (type === 'polygon') {
+        let points = '';
+        for (let i = 0; i < data.length; i++) {
+            points += `(${data[i][0]},${data[i][1]}) `;
+        }
+        shapeItemElem.textContent = `Polygon ${points}`;
+        polygonsData.push(data);
     }
     shapeItemElem.addEventListener("click", function() {
-        hapusShapeDariDaftar(type, startX, startY, endX, endY);
+        hapusShapeDariDaftar(type, data);
     });
 
     shapeListElem.appendChild(shapeItemElem);
 }
 
-function hapusShapeDariDaftar(type, startX, startY, endX, endY) {
+function hapusShapeDariDaftar(type, data) {
     const shapeListElem = document.getElementById("list");
     for (let i = 0; i < shapeListElem.children.length; i++) {
         const shapeItemElem = shapeListElem.children[i];
         const shapeText = shapeItemElem.textContent;
-        if (type === 'garis' && shapeText.includes(`(${startX},${startY}) - (${endX},${endY})`)) {
+        let points = '';
+        if (type === 'garis' || type === 'persegi-panjang' || type === 'persegi') {
+            for (let i = 0; i < data.length; i += 2) {
+                points += `(${data[i]},${data[i + 1]}) `;
+            }
+        } else if (type === 'polygon') {
+            for (let i = 0; i < data.length; i++) {
+                points += `(${data[i][0]},${data[i][1]}) `;
+            }
+        }
+        console.log(points)
+        if (type === 'polygon' && shapeText.includes(`${points}`)) {
             shapeListElem.removeChild(shapeItemElem);
             break;
-        } else if (type === 'persegi-panjang' && shapeText.includes(`(${startX},${startY}) - (${endX},${endY})`)) {
+        } else
+
+        if (type === 'garis' && shapeText.includes(`${points}`)) {
             shapeListElem.removeChild(shapeItemElem);
             break;
-        } else if (type === 'persegi' && shapeText.includes(`(${startX},${startY}) - (${endX},${endY})`)) {
+        } else if (type === 'persegi-panjang' && shapeText.includes(`${points}`)) {
+            shapeListElem.removeChild(shapeItemElem);
+            break;
+        } else if (type === 'persegi' && shapeText.includes(`${points}`)) {
             shapeListElem.removeChild(shapeItemElem);
             break;
         }
     }
     if (type === 'garis') {
-        for (let i = 0; i < linesData.length; i += 4) {
+        for (let i = 0; i < linesData.length; i++) {
+            let line = linesData[i];
             if (
-                linesData[i] === startX &&
-                linesData[i + 1] === startY &&
-                linesData[i + 2] === endX &&
-                linesData[i + 3] === endY
+                line[0] === data[0] &&
+                line[1] === data[1] &&
+                line[2] === data[2] &&
+                line[3] === data[3]
             ) {
-                linesData.splice(i, 4);
+                linesData.splice(i, 1);
                 redrawCanvas();
                 break;
             }
@@ -351,11 +438,13 @@ function hapusShapeDariDaftar(type, startX, startY, endX, endY) {
     } else if (type === 'persegi-panjang') {
         for (let i = 0; i < rectanglesData.length; i++) {
             let rectangle = rectanglesData[i];
+            console.log(rectangle)
+            console.log(data)
             if (
-                rectangle.startX === startX &&
-                rectangle.startY === startY &&
-                rectangle.endX === endX &&
-                rectangle.endY === endY
+                rectangle[0] === data[0] &&
+                rectangle[1] === data[1] &&
+                rectangle[6] === data[6] &&
+                rectangle[7] === data[7]
             ) {
                 rectanglesData.splice(i, 1);
                 redrawCanvas();
@@ -366,12 +455,21 @@ function hapusShapeDariDaftar(type, startX, startY, endX, endY) {
         for (let i = 0; i < squaresData.length; i++) {
             let square = squaresData[i];
             if (
-                square.startX === startX &&
-                square.startY === startY &&
-                square.endX === endX &&
-                square.endY === endY
+                square[0] === data[0] &&
+                square[1] === data[1] &&
+                square[6] === data[6] &&
+                square[7] === data[7]
             ) {
                 squaresData.splice(i, 1);
+                redrawCanvas();
+                break;
+            }
+        }
+    } else if (type === 'polygon') {
+        for (let i = 0; i < polygonsData.length; i++) {
+            let polygon = polygonsData[i];
+            if (polygon === data) {
+                polygonsData.splice(i, 1);
                 redrawCanvas();
                 break;
             }
@@ -395,12 +493,9 @@ function redrawCanvas() {
 }
 
 function drawLines() {
-    for (let i = 0; i < linesData.length; i += 4) {
-        let startX = linesData[i];
-        let startY = linesData[i + 1];
-        let endX = linesData[i + 2];
-        let endY = linesData[i + 3];
-        drawLine(startX, startY, endX, endY);
+    for (let i = 0; i < linesData.length; i++) {
+        let line = linesData[i];
+        redrawLine(program, line);
     }
 }
 
@@ -408,22 +503,20 @@ function drawRectangles() {
     // console.log(rectanglesData)
     for (let i = 0; i < rectanglesData.length; i++) {
         let rectangle = rectanglesData[i];
-        let startX = rectangle.startX;
-        let startY = rectangle.startY;
-        let endX = rectangle.endX;
-        let endY = rectangle.endY;
-        drawRectangle(program, startX, startY, endX, endY);
+        // let colorData = [
+        // 0, 1, 0, 1,
+        // 0, 1, 0, 1,
+        // 0, 1, 0, 1,
+        // 0, 1, 0, 1
+        // ];
+        redrawRectangle(program, rectangle);
     }
 }
 
 function drawSquares() {
     for (let i = 0; i < squaresData.length; i++) {
         let square = squaresData[i];
-        let startX = square.startX;
-        let startY = square.startY;
-        let endX = square.endX;
-        let endY = square.endY;
-        drawSquare(program, startX, startY, endX, endY);
+        redrawSquare(program, square);
     }
 }
 
