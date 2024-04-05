@@ -344,6 +344,7 @@ function clearCanvas() {
     linesData = [];
     rectanglesData = [];
     squaresData = [];
+    polygonsData = [];
     const shapeListElem = document.getElementById("list");
     shapeListElem.innerHTML = "";
 }
