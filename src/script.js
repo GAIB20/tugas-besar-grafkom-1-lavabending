@@ -262,16 +262,19 @@ function startDrawingPolygon() {
 
 function finishDrawingPolygon() {
     polygonDrawing = false;
-    if (currentPolygonPoints.length >= 3) {
+    if (!deletingPoint && !addingPoint && currentPolygonPoints.length >= 3) {
         tambahShapeKeDaftar('polygon', currentPolygonPoints);
         redrawCanvas();
         document.getElementById("startDrawing").style.display = "block";
         document.getElementById("finishDrawing").style.display = "none";
         currentPolygonPoints = [];
+    } else if (deletingPoint) {
+        alert("Klik pada titik untuk menghapusnya dari poligon.");
+    } else if (addingPoint) {
+        alert("Klik pada canvas untuk menambahkan titik ke dalam poligon.");
     } else {
         alert("Minimal 3 titik diperlukan untuk membuat poligon.");
     }
-
 }
 
 function onMouseDown(e) {
@@ -544,10 +547,9 @@ function drawPolygon(points) {
 
 
 const sliderXtranslation = document.getElementById("x-translation");
-
+let xTemp = 0;
 sliderXtranslation.addEventListener("input", function() {
     let xTranslation = parseFloat(sliderXtranslation.value); 
-    let xTemp = 0;
     
     if(linesData.length > 0) {
         for (let i = 0; i < linesData.length; i++) {
@@ -586,14 +588,14 @@ sliderXtranslation.addEventListener("input", function() {
 });
 
 const sliderYtranslation = document.getElementById("y-translation");
+let yTemp = 0;
 sliderYtranslation.addEventListener("input", function() {
     let yTranslation = parseFloat(sliderYtranslation.value);
-    let yTemp = 0;
 
     if(linesData.length > 0) {
         for (let i = 0; i < linesData.length; i++) {
-            linesData[i][1] += yTranslation - yTemp;
-            linesData[i][3] += yTranslation - yTemp;
+            linesData[i][1] += yTranslation;
+            linesData[i][3] += yTranslation;
             redrawCanvas();
         }
     }
@@ -624,4 +626,64 @@ sliderYtranslation.addEventListener("input", function() {
         }
     }
     yTemp = yTranslation;
+});
+
+const sliderScale = document.getElementById("size");
+let scaleTemp = 1;
+sliderScale.addEventListener("input", function() {
+    let scale = parseFloat(sliderScale.value);
+
+    if(linesData.length > 0) {
+        for (let i = 0; i < linesData.length; i++) {
+            linesData[i][0] *= scale / scaleTemp;
+            linesData[i][1] *= scale / scaleTemp;
+            linesData[i][2] *= scale / scaleTemp;
+            linesData[i][3] *= scale / scaleTemp;
+            redrawCanvas();
+        }
+    }
+    if (rectanglesData.length > 0) {
+        for (let i = 0; i < rectanglesData.length; i++) {
+            rectanglesData[i][0] *= scale / scaleTemp;
+            rectanglesData[i][1] *= scale / scaleTemp;
+            rectanglesData[i][2] *= scale / scaleTemp;
+            rectanglesData[i][3] *= scale / scaleTemp;
+            rectanglesData[i][4] *= scale / scaleTemp;
+            rectanglesData[i][5] *= scale / scaleTemp;
+            rectanglesData[i][6] *= scale / scaleTemp;
+            rectanglesData[i][7] *= scale / scaleTemp;
+            redrawCanvas();
+        }
+    }
+    if (squaresData.length > 0) {
+        for(let i = 0; i < squaresData.length; i++) {
+            squaresData[i][0] *= scale / scaleTemp;
+            squaresData[i][1] *= scale / scaleTemp;
+            squaresData[i][2] *= scale / scaleTemp;
+            squaresData[i][3] *= scale / scaleTemp;
+            squaresData[i][4] *= scale / scaleTemp;
+            squaresData[i][5] *= scale / scaleTemp;
+            squaresData[i][6] *= scale / scaleTemp;
+            squaresData[i][7] *= scale / scaleTemp;
+            redrawCanvas();
+        }
+    }
+    if (polygonsData.length > 0) {
+        for(let i = 0; i < polygonsData.length; i++) {
+            for(let j = 0; j < polygonsData[i].length; j++) {
+                polygonsData[i][j][0] *= scale / scaleTemp;
+                polygonsData[i][j][1] *= scale / scaleTemp;
+                redrawCanvas();
+            }
+        }
+    }
+    scaleTemp = scale;
+});
+
+const sliderRotation = document.getElementById("rotation");
+let rotationTemp = 0;
+sliderRotation.addEventListener("input", function() {
+    let rotation = sliderRotation.value * Math.PI / 180;
+
+    
 });
